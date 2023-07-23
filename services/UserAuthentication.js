@@ -1,39 +1,23 @@
 const validator = require("validator");
 const { createNewUser, findUserByEmail } = require('../repositories/UserRepository');
-const passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!.@#&()–{}:;',?/*~$^+=<>]){5,20}$";
-const emailRegex = "^(?=.{1,64}@)[\\p{L}0-9+_-]+(\\.[\\p{L}0-9+_-]+)*@[^-][\\p{L}0-9+-]+(\\.[\\p{L}0-9+-]+)*(\\.\\p{L}{2,})$";
+// const passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!.@#&()–{}:;',?/*~$^+=<>]){5,20}$";
+// const emailRegex = "^(?=.{1,64}@)[\\p{L}0-9+_-]+(\\.[\\p{L}0-9+_-]+)*@[^-][\\p{L}0-9+-]+(\\.[\\p{L}0-9+-]+)*(\\.\\p{L}{2,})$";
+
 
 const signUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    name = name.trim();
+    let { firstName, lastName, email, password } = req.body;
+    firstName = firstName.trim();
+    lastName = lastName.trim();
     email = email.trim();
     password = password.trim();
 
-    if (!(name && email && password)) {
-      throw Error("All fields are requires");
-    }
+    checkInputFieldsNotEmpty(firstName, lastName, email, password);
+    await validateEmail(email);
+    validatePassword(password);
+    await checkUserIsNotRegisteredAlready(email);
 
-    const isEmailMatch = await validator.matches(email, emailRegex);
-    if (!isEmailMatch) {
-      throw Error("Invalid email entered");
-    }
-
-    const isPasswordMatch = await validator.matches(password, passwordRegex);
-    if (!isPasswordMatch) {
-      throw Error("Password must be at least 5 characters long.");
-    }
-
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      throw Error("User with this email already exists. Login");
-    }
-
-    const newUser = createNewUser({
-      name,
-      email,
-      password,
-    });
+    const newUser = await registerUser(firstName, lastName, email, password);
 
     res.status(200).json(newUser);
   } catch (error) {
@@ -44,3 +28,44 @@ const signUp = async (req, res) => {
 module.exports = {
   signUp,
 };
+
+
+
+
+
+
+const checkInputFieldsNotEmpty = (firstName, lastName, email, password) => {
+  if (!(firstName && lastName && email && password)) {
+    throw Error("All fields are requires");
+  }
+}
+
+async function registerUser(firstName, lastName, email, password) {
+  return await createNewUser({
+    firstName,
+    lastName,
+    email,
+    password,
+  });
+}
+
+async function checkUserIsNotRegisteredAlready(email) {
+  const existingUser = await findUserByEmail(email);
+  if (existingUser) {
+    throw Error("User with this email already exists. Login");
+  }
+}
+
+function validatePassword(password) {
+  if (password.length < 5) {
+    throw Error("Password must be at least 5 characters long.");
+  }
+}
+
+async function validateEmail(email) {
+  const isEmail = await validator.isEmail(email);
+  if (!isEmail) {
+    throw Error("Invalid email entered");
+  }
+}
+

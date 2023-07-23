@@ -1,25 +1,27 @@
-import { PrismaClient } from "@prisma/client";
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const hashData = require('../hashData/HashData')
+const {hashData} = require("../utils/HashData");
 
-const createNewUser = async (userData) => {
+const createNewUser = async ( userData ) => {
   try {
-    const { name, email, password } = userData;
-    const hashedPassword = hashData(password, 10)
+    const { firstName, lastName, email, password } = userData;
+    let hashedPassword = await hashData(password, 10);    
 
     const newUser = await prisma.user.create({
       data: {
-        name,
+        firstName, 
+        lastName, 
         email,
-        password: hashedPassword
-      }
-    })
-    return newUser
-    
+        password: hashedPassword,
+      },
+    });
+
+    return newUser;
   } catch (error) {
-    throw error
+    throw error;
   }
 };
+
 
 const findUserByEmail = async (email) => {
   try {
@@ -30,11 +32,9 @@ const findUserByEmail = async (email) => {
     });
     return foundUser;
   } catch (error) {
-    throw error
+    throw error;
   }
 };
-
-
 
 module.exports = {
   createNewUser,
