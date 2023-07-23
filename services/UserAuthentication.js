@@ -1,5 +1,8 @@
 const validator = require("validator");
 const { createNewUser, findUserByEmail } = require('../repositories/UserRepository');
+const bcrypt = require('bcryptjs')
+const createJwtToken = require('../helper/GetJwtToken')
+const {verifyHashedData} = require('../utils/HashData')
 // const passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!.@#&()–{}:;',?/*~$^+=<>]){5,20}$";
 // const emailRegex = "^(?=.{1,64}@)[\\p{L}0-9+_-]+(\\.[\\p{L}0-9+_-]+)*@[^-][\\p{L}0-9+-]+(\\.[\\p{L}0-9+-]+)*(\\.\\p{L}{2,})$";
 
@@ -25,8 +28,31 @@ const signUp = async (req, res) => {
   }
 };
 
+
+const login = async(req, res) => {
+  try {
+    let {email, password} = req.body
+
+    email = email.trim();
+    password = password.trim();
+
+    if (!(email && password)) {
+      throw Error ("All fields are required")
+    }
+
+    const foundUser = await checkUserIsSignedUp(email);
+    await checkPasswordMatchesUserInDatabase(password, foundUser);
+    await generateJwtToken(foundUser, email);
+    
+    res.status(200).json(foundUser)
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
 module.exports = {
   signUp,
+  login
 };
 
 
@@ -37,6 +63,28 @@ module.exports = {
 const checkInputFieldsNotEmpty = (firstName, lastName, email, password) => {
   if (!(firstName && lastName && email && password)) {
     throw Error("All fields are requires");
+  }
+}
+
+async function checkUserIsSignedUp(email) {
+  const foundUser = await findUserByEmail(email);
+
+  if (!(foundUser)) {
+    throw Error("This email does not match an account");
+  }
+  return foundUser;
+}
+
+async function generateJwtToken(foundUser, email) {
+  const tokenData = { userId: foundUser._id, email };
+  const token = await createJwtToken(tokenData);
+  foundUser.token = token;
+}
+
+async function checkPasswordMatchesUserInDatabase(password, foundUser) {
+  const isPasswordMatch = await verifyHashedData(password, foundUser.password);
+  if (!(isPasswordMatch)) {
+    throw Error("incorrect password");
   }
 }
 
