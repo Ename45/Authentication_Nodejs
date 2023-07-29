@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const {sendOTP} = require('../repositories/OtpRepository')
+const { sendOTP, verifyingOTP, deleteOTP } = require("../repositories/OtpRepository");
 
 const sendVerificationOTPEmail = async ( email ) => {
   try {
@@ -33,4 +33,20 @@ const sendVerificationOTPEmail = async ( email ) => {
   }
 };
 
-module.exports = { sendVerificationOTPEmail }
+const verifyUserEmailWithPin = async({email, otp}) => {
+  try {
+    const validOTP = await verifyingOTP({email, otp});
+
+    if (!validOTP) {
+      throw Error("Invalid otp passed. Check your email.")
+    }
+
+    await deleteOTP(email);
+    return;
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+module.exports = { sendVerificationOTPEmail, verifyUserEmailWithPin }

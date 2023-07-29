@@ -1,4 +1,4 @@
-const { sendVerificationOTPEmail } = require('../repositories/EmailVerificationRepository')
+const { sendVerificationOTPEmail, verifyUserEmailWithPin } = require('../repositories/EmailVerificationRepository')
 
 const verifyEmail = async (req, res) => {
   try {
@@ -15,6 +15,23 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+const verifyPin = async(req, res) => {
+  try {
+    let { email, otp } = req.body
+
+    if (!(email && otp)) {
+      throw Error("Empty otp details are no allowed")
+    }
+
+    await verifyUserEmailWithPin({ email, otp })
+    res.status(200).json({ email, verified: true});
+
+  } catch (error) {
+    res.status(400).send(error.message)
+  }
+}
+
 module.exports = {
   verifyEmail,
+  verifyPin,
 };
