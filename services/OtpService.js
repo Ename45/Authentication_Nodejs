@@ -1,4 +1,4 @@
-const {sendOTP} = require('../repositories/OtpRepository')
+const { sendOTP, verifyingOTP } = require('../repositories/OtpRepository')
 
 const otpRequest = async (req, res) => {
   try {
@@ -18,5 +18,17 @@ const otpRequest = async (req, res) => {
 };
 
 
+const verifyOTP = async(req, res) => {
+  try {
+    const { email, otp } = req.body
+    
+    const validOTP = await verifyingOTP({ email, otp })
+    res.status(200).json({valid: validOTP})
+  } catch (error) {
+    res.status(400).send(error.message)
+  }
+}
 
-module.exports = { otpRequest }
+
+
+module.exports = { otpRequest, verifyOTP }
