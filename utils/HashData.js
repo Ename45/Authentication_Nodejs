@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 
 // const saltRounds = 10
 
-const hashData = async(data, saltRounds=10) => {
+const hashedData = async(data, saltRounds=10) => {
   try {
     const hashedData = await bcrypt.hash(data, saltRounds);
     return hashedData;
@@ -20,4 +20,4 @@ const verifyHashedData = async(rawData, hashed) => {
   }
 }
 
-module.exports = {hashData, verifyHashedData}
+module.exports = { hashedData, verifyHashedData }

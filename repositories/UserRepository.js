@@ -1,11 +1,11 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const {hashData} = require("../utils/HashData");
+const {hashedData} = require("../utils/HashData");
 
 const createNewUser = async ( userData ) => {
   try {
     const { firstName, lastName, email, password } = userData;
-    let hashedPassword = await hashData(password, 10);    
+    let hashedPassword = await hashedData(password, 10);    
 
     const newUser = await prisma.user.create({
       data: {
@@ -25,7 +25,7 @@ const createNewUser = async ( userData ) => {
 
 const findUserByEmail = async (email) => {
   try {
-    const foundUser = await prisma.user.findFirst({
+    const foundUser = await prisma.user.findUnique({
       where: {
         email: email,
       },
