@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { sendOTP } = require("../repositories/OtpRepository")
+const { sendOTP, verifyingOTP, deleteOTP } = require("../repositories/OtpRepository")
+const { hashedData } = require('../utils/HashData')
 
 
 
@@ -38,7 +39,42 @@ const sendPasswordRestOTPEmail = async (email) => {
 };
 
 
+const resetUserPassword = async({ email, otp, newPassword }) => {
+  try {
+    const validOTP = await verifyingOTP({ email, otp });
+
+    if (!validOTP) {
+      throw Error("Invalid code passes. Check your email")
+    }
+
+    // update user record with new password
+    if (newPassword.length < 5) {
+      throw Error("Password must be at least 5 characters long.");
+    }
+
+    const hashedNewPassword = await hashedData(newPassword);
+
+    await prisma.user.update({
+      where: {
+        email: email
+      },
+      data: {
+        password: hashedNewPassword
+      }
+    })
+
+    await deleteOTP(email);
+
+    return;
+
+  } catch (error) {
+    throw error
+  }
+}
+
+
 
 module.exports = {
   sendPasswordRestOTPEmail,
+  resetUserPassword
 }

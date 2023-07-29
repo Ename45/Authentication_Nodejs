@@ -1,4 +1,4 @@
-const { sendPasswordRestOTPEmail } = require("../repositories/ForgotPasswordRepository")
+const { sendPasswordRestOTPEmail, resetUserPassword } = require("../repositories/ForgotPasswordRepository")
 
 const forgotPassword = async(req, res) => {
   try {
@@ -18,5 +18,21 @@ const forgotPassword = async(req, res) => {
 }
 
 
+const resetPassword = async(req, res) => {
+  try {
+    let { email, otp, newPassword } = req.body;
 
-module.exports = {forgotPassword}
+    if (!(email && otp && newPassword)) {
+      throw Error ("Empty credentials are not allowed")
+    }
+
+    await resetUserPassword({email, otp, newPassword})
+
+    res.status(200).json({ email, passwordReset: true})
+  } catch (error) {
+    res.status(400).send(error.message)
+  }
+}
+
+
+module.exports = {forgotPassword, resetPassword }
