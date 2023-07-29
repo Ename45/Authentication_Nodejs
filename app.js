@@ -3,6 +3,7 @@ const cors = require("cors");
 const userRoutes = require('./routes/UserRoutes')
 const otpRoutes = require('./routes/OtpRoutes')
 const emailVerificationRoutes = require('./routes/emailVerificationRoute')
+const forgotPasswordRoutes = require('./routes/ForgotPasswordRoute')
 
 require("dotenv").config();
 const app = express();
@@ -14,6 +15,7 @@ app.use(cors());
 app.use('/api/v1/users', userRoutes)
 app.use('/api/v1/otp', otpRoutes)
 app.use('/api/v1/email_verification', emailVerificationRoutes)
+app.use('/api/v1/password-reset', forgotPasswordRoutes)
 
 
 app.listen(process.env.PORT, () => {
