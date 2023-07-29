@@ -41,6 +41,16 @@ const verifyUserEmailWithPin = async({email, otp}) => {
       throw Error("Invalid otp passed. Check your email.")
     }
 
+    // update user record to show verified ie true
+  const updatedUser = await prisma.user.updateMany({
+    where: {
+      email: email,
+    },
+    data: {
+      verified: true,
+    },
+  });
+
     await deleteOTP(email);
     return;
 

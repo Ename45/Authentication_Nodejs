@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 const validator = require("validator");
 const { createNewUser, findUserByEmail, } = require("../repositories/UserRepository");
 const { verifyHashedData } = require("../utils/HashData");
+const { sendVerificationOTPEmail } = require('../repositories/EmailVerificationRepository')
 const createJwtToken = require("../helper/GetJwtToken");
 require("dotenv").config;
 
@@ -23,6 +24,8 @@ const signUp = async (req, res) => {
 
     const newUser = await registerUser(firstName, lastName, email, password);
 
+    await sendVerificationOTPEmail(email)
+    
     res.status(200).json(newUser);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -42,6 +45,11 @@ const login = async (req, res) => {
     }
 
     const foundUser = await checkUserIsSignedUp(email);
+
+    if (!foundUser.verified) {
+      throw Error("Your Email has not been verified yet. Check your email")
+    }
+
     await checkPasswordMatchesUserInDatabase(password, foundUser);
     await generateJwtToken(foundUser, email);
 
