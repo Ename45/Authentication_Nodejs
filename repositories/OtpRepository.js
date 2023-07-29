@@ -119,25 +119,3 @@ const deleteOTP = async(email) => {
 
 module.exports = { sendOTP, verifyingOTP, deleteOTP }
 
-
-
-
-    // const generatedOTP = await generateOTP();
-
-    // // const mailOptions = {
-    // //   from: process.env.AUTH_EMAIL,
-    // //   to: email,
-    // //   subject,
-    // //   html: `<p>${message}</p><p style="color:tomato;font-size:25px;letter-spacing:2px;"><b>${generatedOTP}</b></p><p>This code <b>expires in ${duration} hour(s)</b></p>`
-    // // }
-
-    // // await sendEmail(mailOptions)
-
-    // const hashedOTP = await hashData(generatedOTP)
-    // const newOTP = await prisma.oTP.create({
-    //   email,
-    //   otp: hashedOTP,
-    //   expiresAt: Date.now() + 3600000 * +duration,
-    // })
-
-    // return newOTP
